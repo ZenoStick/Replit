@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,9 @@ export function WorkoutTimer({
   const [isPaused, setIsPaused] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   
+  // Add a ref to track if onComplete has been called
+  const onCompleteCalled = useRef(false);
+  
   // Reset the timer when exercise changes (initialSeconds or targetReps change)
   useEffect(() => {
     console.log("Exercise changed, resetting timer:", { initialSeconds, targetReps });
@@ -32,6 +35,8 @@ export function WorkoutTimer({
     setReps(initialReps);
     setIsPaused(false);
     setIsComplete(false);
+    // Reset the onComplete flag
+    onCompleteCalled.current = false;
   }, [initialSeconds, targetReps, initialReps]);
   
   const formatTime = (totalSeconds: number) => {
@@ -41,22 +46,22 @@ export function WorkoutTimer({
   };
   
   const incrementReps = useCallback(() => {
-    if (countReps && !isComplete) {
+    if (countReps && !isComplete && !onCompleteCalled.current) {
       const newReps = reps + 1;
       setReps(newReps);
       
       // Check if target is reached
       if (newReps >= targetReps) {
         console.log("Target reps reached:", newReps, ">=", targetReps);
+        // Prevent multiple calls
+        onCompleteCalled.current = true;
         // Use setTimeout to avoid state update during render cycle
         setTimeout(() => {
           setIsComplete(true);
-          // Directly call onComplete for immediate transition
-          onComplete();
         }, 100);
       }
     }
-  }, [countReps, targetReps, isComplete, reps, onComplete]);
+  }, [countReps, targetReps, isComplete, reps]);
   
   useEffect(() => {
     let interval: NodeJS.Timeout;

@@ -156,15 +156,37 @@ export default function Workout({ id }: WorkoutPageProps) {
   // Track if challenge completion has been triggered
   const [completionTriggered, setCompletionTriggered] = useState(false);
   
+  // Use a ref to track transition status
+  const isTransitioning = useRef(false);
+  
   const handleExerciseComplete = useCallback(() => {
     console.log("Exercise complete called. Current index:", currentExerciseIndex, "Total exercises:", exercises.length);
+    console.log("Is transitioning:", isTransitioning.current);
+    
+    // Prevent multiple transitions at once
+    if (isTransitioning.current) {
+      console.log("Already transitioning, ignoring call");
+      return;
+    }
     
     if (currentExerciseIndex < exercises.length - 1) {
       console.log("Moving to next exercise");
+      // Set transitioning flag
+      isTransitioning.current = true;
+      
       // Use setTimeout to ensure state updates happen in the next cycle
       setTimeout(() => {
-        setCurrentExerciseIndex(prev => prev + 1);
-      }, 100);
+        setCurrentExerciseIndex(prev => {
+          console.log("Incrementing from", prev, "to", prev + 1);
+          return prev + 1;
+        });
+        
+        // Reset transitioning flag after a delay
+        setTimeout(() => {
+          isTransitioning.current = false;
+          console.log("Reset transition flag");
+        }, 500);
+      }, 200);
     } else if (!completionTriggered && !workoutComplete) {
       console.log("Completing workout");
       // Prevent multiple completion calls
@@ -172,7 +194,7 @@ export default function Workout({ id }: WorkoutPageProps) {
       // Use setTimeout to break the potential React state update loop
       setTimeout(() => {
         completeChallenge.mutate();
-      }, 100);
+      }, 200);
     }
   }, [currentExerciseIndex, exercises.length, completionTriggered, workoutComplete, completeChallenge]);
   
