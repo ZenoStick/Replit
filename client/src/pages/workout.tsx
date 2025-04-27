@@ -108,7 +108,13 @@ export default function Workout({ id }: WorkoutPageProps) {
     userId: 0
   };
   
+  // Ensure this is always up-to-date by computing it inside the render
   const currentExercise = exercises[currentExerciseIndex];
+  
+  // Add effect to log exercise changes for debugging
+  useEffect(() => {
+    console.log("Exercise changed to:", currentExercise?.name, "Index:", currentExerciseIndex);
+  }, [currentExerciseIndex, currentExercise?.name]);
   
   // Complete challenge mutation
   const completeChallenge = useMutation({
@@ -151,15 +157,22 @@ export default function Workout({ id }: WorkoutPageProps) {
   const [completionTriggered, setCompletionTriggered] = useState(false);
   
   const handleExerciseComplete = useCallback(() => {
+    console.log("Exercise complete called. Current index:", currentExerciseIndex, "Total exercises:", exercises.length);
+    
     if (currentExerciseIndex < exercises.length - 1) {
-      setCurrentExerciseIndex(currentExerciseIndex + 1);
+      console.log("Moving to next exercise");
+      // Use setTimeout to ensure state updates happen in the next cycle
+      setTimeout(() => {
+        setCurrentExerciseIndex(prev => prev + 1);
+      }, 100);
     } else if (!completionTriggered && !workoutComplete) {
-      // Prevent multiple completion calls by using a ref
+      console.log("Completing workout");
+      // Prevent multiple completion calls
       setCompletionTriggered(true);
       // Use setTimeout to break the potential React state update loop
       setTimeout(() => {
         completeChallenge.mutate();
-      }, 0);
+      }, 100);
     }
   }, [currentExerciseIndex, exercises.length, completionTriggered, workoutComplete, completeChallenge]);
   
@@ -273,6 +286,7 @@ export default function Workout({ id }: WorkoutPageProps) {
                 </div>
                 
                 <WorkoutTimer
+                  key={`exercise-${currentExerciseIndex}`}
                   initialSeconds={currentExercise.duration || 60}
                   initialReps={0}
                   targetReps={currentExercise.reps || 0}

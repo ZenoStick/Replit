@@ -25,6 +25,15 @@ export function WorkoutTimer({
   const [isPaused, setIsPaused] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   
+  // Reset the timer when exercise changes (initialSeconds or targetReps change)
+  useEffect(() => {
+    console.log("Exercise changed, resetting timer:", { initialSeconds, targetReps });
+    setSeconds(initialSeconds);
+    setReps(initialReps);
+    setIsPaused(false);
+    setIsComplete(false);
+  }, [initialSeconds, targetReps, initialReps]);
+  
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
@@ -37,14 +46,17 @@ export function WorkoutTimer({
       setReps(newReps);
       
       // Check if target is reached
-      if (newReps >= targetReps && !isComplete) {
+      if (newReps >= targetReps) {
+        console.log("Target reps reached:", newReps, ">=", targetReps);
         // Use setTimeout to avoid state update during render cycle
         setTimeout(() => {
           setIsComplete(true);
-        }, 0);
+          // Directly call onComplete for immediate transition
+          onComplete();
+        }, 100);
       }
     }
-  }, [countReps, targetReps, isComplete, reps]);
+  }, [countReps, targetReps, isComplete, reps, onComplete]);
   
   useEffect(() => {
     let interval: NodeJS.Timeout;
