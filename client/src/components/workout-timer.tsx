@@ -36,7 +36,10 @@ export function WorkoutTimer({
       setReps(prev => {
         const newReps = prev + 1;
         if (newReps >= targetReps) {
-          setIsComplete(true);
+          // Only set complete once
+          if (!isComplete) {
+            setIsComplete(true);
+          }
         }
         return newReps;
       });

@@ -147,10 +147,15 @@ export default function Workout({ id }: WorkoutPageProps) {
     }
   });
   
+  // Track if challenge completion has been triggered
+  const [completionTriggered, setCompletionTriggered] = useState(false);
+  
   const handleExerciseComplete = () => {
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex(currentExerciseIndex + 1);
-    } else {
+    } else if (!completionTriggered) {
+      // Prevent multiple completion calls
+      setCompletionTriggered(true);
       completeChallenge.mutate();
     }
   };
