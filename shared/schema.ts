@@ -1,5 +1,6 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, foreignKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
 import { z } from "zod";
 
 export const users = pgTable("users", {
@@ -27,7 +28,7 @@ export const challenges = pgTable("challenges", {
   reps: integer("reps"),
   isComplete: boolean("is_complete").notNull().default(false),
   progress: integer("progress").notNull().default(0),
-  userId: integer("user_id").notNull()
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" })
 });
 
 export const workouts = pgTable("workouts", {
@@ -36,7 +37,7 @@ export const workouts = pgTable("workouts", {
   description: text("description").notNull(),
   exercises: text("exercises").notNull(), // JSON stringified array of exercises
   duration: integer("duration").notNull(), // in minutes
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   completedDate: timestamp("completed_date")
 });
 
@@ -45,7 +46,7 @@ export const achievements = pgTable("achievements", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   icon: text("icon").notNull(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   achievedDate: timestamp("achieved_date").notNull().defaultNow()
 });
 
@@ -61,14 +62,14 @@ export const rewards = pgTable("rewards", {
 
 export const userRewards = pgTable("user_rewards", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  rewardId: integer("reward_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  rewardId: integer("reward_id").notNull().references(() => rewards.id, { onDelete: "cascade" }),
   acquiredDate: timestamp("acquired_date").notNull().defaultNow()
 });
 
 export const spinResults = pgTable("spin_results", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   reward: text("reward").notNull(),
   points: integer("points"),
   spinDate: timestamp("spin_date").notNull().defaultNow()
@@ -175,3 +176,55 @@ export interface Exercise {
   reps?: number;
   imageUrl: string;
 }
+
+// Define relationships between tables
+export const usersRelations = relations(users, ({ many }) => ({
+  challenges: many(challenges),
+  workouts: many(workouts),
+  achievements: many(achievements),
+  userRewards: many(userRewards),
+  spinResults: many(spinResults)
+}));
+
+export const challengesRelations = relations(challenges, ({ one }) => ({
+  user: one(users, {
+    fields: [challenges.userId],
+    references: [users.id]
+  })
+}));
+
+export const workoutsRelations = relations(workouts, ({ one }) => ({
+  user: one(users, {
+    fields: [workouts.userId],
+    references: [users.id]
+  })
+}));
+
+export const achievementsRelations = relations(achievements, ({ one }) => ({
+  user: one(users, {
+    fields: [achievements.userId],
+    references: [users.id]
+  })
+}));
+
+export const userRewardsRelations = relations(userRewards, ({ one }) => ({
+  user: one(users, {
+    fields: [userRewards.userId],
+    references: [users.id]
+  }),
+  reward: one(rewards, {
+    fields: [userRewards.rewardId],
+    references: [rewards.id]
+  })
+}));
+
+export const rewardsRelations = relations(rewards, ({ many }) => ({
+  userRewards: many(userRewards)
+}));
+
+export const spinResultsRelations = relations(spinResults, ({ one }) => ({
+  user: one(users, {
+    fields: [spinResults.userId],
+    references: [users.id]
+  })
+}));

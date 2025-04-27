@@ -7,6 +7,8 @@ import {
   userRewards, type UserReward, type InsertUserReward,
   spinResults, type SpinResult, type InsertSpinResult
 } from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
+import { db } from "./db";
 
 export interface IStorage {
   // Users
@@ -427,4 +429,332 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  // User methods
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    
+    // Create initial challenges for the user
+    await this.createInitialChallenges(user.id);
+    
+    return user;
+  }
+  
+  async updateUserPoints(userId: number, points: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) return undefined;
+    
+    const newPoints = user.points + points;
+    const newLevel = Math.floor(newPoints / 100) + 1;
+    
+    const [updatedUser] = await db
+      .update(users)
+      .set({ 
+        points: newPoints, 
+        level: newLevel 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+      
+    return updatedUser;
+  }
+  
+  async updateUserStreak(userId: number, streak: number): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ streakDays: streak })
+      .where(eq(users.id, userId))
+      .returning();
+      
+    return updatedUser;
+  }
+
+  // Challenge methods
+  async getChallenges(userId: number): Promise<Challenge[]> {
+    return db.select().from(challenges).where(eq(challenges.userId, userId));
+  }
+
+  async getChallenge(id: number): Promise<Challenge | undefined> {
+    const [challenge] = await db.select().from(challenges).where(eq(challenges.id, id));
+    return challenge || undefined;
+  }
+
+  async createChallenge(insertChallenge: InsertChallenge): Promise<Challenge> {
+    const [challenge] = await db
+      .insert(challenges)
+      .values(insertChallenge)
+      .returning();
+      
+    return challenge;
+  }
+  
+  async updateChallengeProgress(id: number, progress: number): Promise<Challenge | undefined> {
+    const [updatedChallenge] = await db
+      .update(challenges)
+      .set({ progress })
+      .where(eq(challenges.id, id))
+      .returning();
+      
+    return updatedChallenge;
+  }
+  
+  async completeChallenge(id: number): Promise<Challenge | undefined> {
+    const [challenge] = await db.select().from(challenges).where(eq(challenges.id, id));
+    if (!challenge) return undefined;
+    
+    const [updatedChallenge] = await db
+      .update(challenges)
+      .set({ 
+        isComplete: true,
+        progress: 100
+      })
+      .where(eq(challenges.id, id))
+      .returning();
+    
+    // Add points to user
+    await this.updateUserPoints(challenge.userId, challenge.points);
+    
+    return updatedChallenge;
+  }
+
+  // Workout methods
+  async getWorkouts(userId: number): Promise<Workout[]> {
+    return db.select().from(workouts).where(eq(workouts.userId, userId));
+  }
+
+  async getWorkout(id: number): Promise<Workout | undefined> {
+    const [workout] = await db.select().from(workouts).where(eq(workouts.id, id));
+    return workout || undefined;
+  }
+
+  async createWorkout(insertWorkout: InsertWorkout): Promise<Workout> {
+    const [workout] = await db
+      .insert(workouts)
+      .values(insertWorkout)
+      .returning();
+      
+    return workout;
+  }
+  
+  async completeWorkout(id: number): Promise<Workout | undefined> {
+    const [workout] = await db.select().from(workouts).where(eq(workouts.id, id));
+    if (!workout) return undefined;
+    
+    const now = new Date();
+    const [updatedWorkout] = await db
+      .update(workouts)
+      .set({ completedDate: now })
+      .where(eq(workouts.id, id))
+      .returning();
+    
+    // Add basic points for completing a workout (30 points)
+    await this.updateUserPoints(workout.userId, 30);
+    
+    return updatedWorkout;
+  }
+
+  // Achievement methods
+  async getAchievements(userId: number): Promise<Achievement[]> {
+    return db.select().from(achievements).where(eq(achievements.userId, userId));
+  }
+
+  async createAchievement(insertAchievement: InsertAchievement): Promise<Achievement> {
+    const [achievement] = await db
+      .insert(achievements)
+      .values(insertAchievement)
+      .returning();
+      
+    return achievement;
+  }
+
+  // Reward methods
+  async getRewards(): Promise<Reward[]> {
+    return db.select().from(rewards);
+  }
+  
+  async getUserRewards(userId: number): Promise<Reward[]> {
+    return db
+      .select({
+        id: rewards.id,
+        title: rewards.title,
+        description: rewards.description,
+        category: rewards.category,
+        icon: rewards.icon,
+        pointsCost: rewards.pointsCost,
+        isAvailable: rewards.isAvailable
+      })
+      .from(userRewards)
+      .innerJoin(rewards, eq(userRewards.rewardId, rewards.id))
+      .where(eq(userRewards.userId, userId));
+  }
+  
+  async redeemReward(userId: number, rewardId: number): Promise<UserReward | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    const [reward] = await db.select().from(rewards).where(eq(rewards.id, rewardId));
+    
+    if (!user || !reward) return undefined;
+    
+    // Check if user has enough points
+    if (user.points < reward.pointsCost) return undefined;
+    
+    // Deduct points from user
+    await this.updateUserPoints(userId, -reward.pointsCost);
+    
+    // Add reward to user
+    const [userReward] = await db
+      .insert(userRewards)
+      .values({ userId, rewardId })
+      .returning();
+      
+    return userReward;
+  }
+
+  // Spin Wheel methods
+  async getSpinHistory(userId: number): Promise<SpinResult[]> {
+    return db.select().from(spinResults).where(eq(spinResults.userId, userId));
+  }
+  
+  async createSpinResult(insertSpinResult: InsertSpinResult): Promise<SpinResult> {
+    const [spinResult] = await db
+      .insert(spinResults)
+      .values(insertSpinResult)
+      .returning();
+      
+    // If points were awarded, update user points
+    if (spinResult.points && spinResult.points > 0) {
+      await this.updateUserPoints(spinResult.userId, spinResult.points);
+    }
+    
+    return spinResult;
+  }
+
+  // Leaderboard
+  async getLeaderboard(): Promise<User[]> {
+    return db.select().from(users).orderBy(desc(users.points));
+  }
+  
+  // Helper methods
+  private async createInitialChallenges(userId: number) {
+    const challenges: InsertChallenge[] = [
+      {
+        title: "Morning Workout",
+        description: "Complete a quick morning workout routine",
+        category: "Fitness",
+        icon: "dumbbell",
+        points: 20,
+        duration: 15,
+        reps: null,
+        userId
+      },
+      {
+        title: "Hydration Goal",
+        description: "Drink 8 cups of water today",
+        category: "Hydration",
+        icon: "glass-water",
+        points: 15,
+        duration: null,
+        reps: 8,
+        userId
+      },
+      {
+        title: "Mindfulness Break",
+        description: "Take 5 minutes for mindfulness meditation",
+        category: "Mindfulness",
+        icon: "brain",
+        points: 10,
+        duration: 5,
+        reps: null,
+        userId
+      },
+      {
+        title: "Healthy Meal",
+        description: "Log a healthy meal with protein and vegetables",
+        category: "Nutrition",
+        icon: "utensils",
+        points: 15,
+        duration: null,
+        reps: null,
+        userId
+      }
+    ];
+    
+    for (const challenge of challenges) {
+      await this.createChallenge(challenge);
+    }
+  }
+  
+  // Initialize rewards
+  async initializeRewards() {
+    // Check if rewards exist
+    const existingRewards = await db.select().from(rewards);
+    if (existingRewards.length > 0) return;
+    
+    const defaultRewards: InsertReward[] = [
+      {
+        title: "Premium Avatar",
+        description: "Unlock a premium avatar for your profile",
+        category: "Digital",
+        icon: "user-astronaut",
+        pointsCost: 200,
+        isAvailable: true
+      },
+      {
+        title: "App Wallpaper",
+        description: "Exclusive app wallpaper pack",
+        category: "Digital",
+        icon: "image",
+        pointsCost: 100,
+        isAvailable: true
+      },
+      {
+        title: "$5 Gift Card",
+        description: "Redeem for a $5 digital gift card",
+        category: "Real World",
+        icon: "gift",
+        pointsCost: 500,
+        isAvailable: true
+      },
+      {
+        title: "Exclusive Badge",
+        description: "Showcase a rare achievement badge on your profile",
+        category: "Digital",
+        icon: "medal",
+        pointsCost: 150,
+        isAvailable: true
+      },
+      {
+        title: "Wireless Earbuds",
+        description: "Perfect for your workouts",
+        category: "Real World",
+        icon: "headphones",
+        pointsCost: 750,
+        isAvailable: true
+      }
+    ];
+    
+    await db.insert(rewards).values(defaultRewards);
+  }
+}
+
+// Initialize the storage
+export const storage = new DatabaseStorage();
+
+// Initialize rewards
+(async () => {
+  try {
+    const dbStorage = storage as DatabaseStorage;
+    await dbStorage.initializeRewards();
+  } catch (error) {
+    console.error("Error initializing rewards:", error);
+  }
+})();
