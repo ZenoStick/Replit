@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 267 100% 51%; /* #5E17EB */
+  --primary-foreground: 211 100% 99%;
+  --secondary: 180 100% 43%; /* #00D9D9 */
+  --secondary-foreground: 24 9.8% 10%;
+  --accent: 339 100% 63%; /* #FF427F */
+  --accent-foreground: 24 9.8% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 20 14.3% 4.1%;
+  --radius: 0.5rem;
+  --chart-1: 267 100% 51%;
+  --chart-2: 180 100% 43%;
+  --chart-3: 339 100% 63%;
+  --chart-4: 50 100% 50%; /* #FFD600 */
+  --chart-5: 142 64% 57%; /* #4CD964 */
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 267 100% 51%; /* #5E17EB */
+  --primary-foreground: 211 100% 99%;
+  --secondary: 180 100% 43%; /* #00D9D9 */
+  --secondary-foreground: 0 0% 98%;
+  --accent: 339 100% 63%; /* #FF427F */
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Quicksand', sans-serif;
+    overflow-x: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Nunito', sans-serif;
+  }
+}
+
+/* Custom classes */
+.text-energy {
+  color: #FFD600;
+}
+
+.bg-energy {
+  background-color: #FFD600;
+}
+
+.text-nature {
+  color: #4CD964;
+}
+
+.bg-nature {
+  background-color: #4CD964;
+}
+
+.font-heading {
+  font-family: 'Nunito', sans-serif;
+}
+
+.font-body {
+  font-family: 'Quicksand', sans-serif;
+}
+
+.active-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #5E17EB;
+  display: inline-block;
+}
+
+.inactive-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #E2E8F0;
+  display: inline-block;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #5E17EB, #00D9D9);
+}
+
+.badge {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+}
+
+.badge::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: rotate(45deg);
+  transition: all 0.3s ease;
+}
+
+.badge:hover::after {
+  left: 100%;
+}
+
+.workout-timer {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 1rem 0;
+}
+
+/* Animation for achievements */
+@keyframes pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pop-in {
+  animation: pop 0.5s ease forwards;
+}
+
+/* Hide scrollbar */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
