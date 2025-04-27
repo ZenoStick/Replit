@@ -33,18 +33,18 @@ export function WorkoutTimer({
   
   const incrementReps = useCallback(() => {
     if (countReps && !isComplete) {
-      setReps(prev => {
-        const newReps = prev + 1;
-        if (newReps >= targetReps) {
-          // Only set complete once
-          if (!isComplete) {
-            setIsComplete(true);
-          }
-        }
-        return newReps;
-      });
+      const newReps = reps + 1;
+      setReps(newReps);
+      
+      // Check if target is reached
+      if (newReps >= targetReps && !isComplete) {
+        // Use setTimeout to avoid state update during render cycle
+        setTimeout(() => {
+          setIsComplete(true);
+        }, 0);
+      }
     }
-  }, [countReps, targetReps, isComplete]);
+  }, [countReps, targetReps, isComplete, reps]);
   
   useEffect(() => {
     let interval: NodeJS.Timeout;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -150,15 +150,18 @@ export default function Workout({ id }: WorkoutPageProps) {
   // Track if challenge completion has been triggered
   const [completionTriggered, setCompletionTriggered] = useState(false);
   
-  const handleExerciseComplete = () => {
+  const handleExerciseComplete = useCallback(() => {
     if (currentExerciseIndex < exercises.length - 1) {
       setCurrentExerciseIndex(currentExerciseIndex + 1);
-    } else if (!completionTriggered) {
-      // Prevent multiple completion calls
+    } else if (!completionTriggered && !workoutComplete) {
+      // Prevent multiple completion calls by using a ref
       setCompletionTriggered(true);
-      completeChallenge.mutate();
+      // Use setTimeout to break the potential React state update loop
+      setTimeout(() => {
+        completeChallenge.mutate();
+      }, 0);
     }
-  };
+  }, [currentExerciseIndex, exercises.length, completionTriggered, workoutComplete, completeChallenge]);
   
   // Page animations
   const containerVariants = {
