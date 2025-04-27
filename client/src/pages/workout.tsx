@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -116,6 +116,15 @@ export default function Workout({ id }: WorkoutPageProps) {
     console.log("Exercise changed to:", currentExercise?.name, "Index:", currentExerciseIndex);
   }, [currentExerciseIndex, currentExercise?.name]);
   
+  // Cleanup effect to cancel any pending timeouts when component unmounts
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
+    };
+  }, []);
+  
   // Complete challenge mutation
   const completeChallenge = useMutation({
     mutationFn: async () => {
@@ -156,45 +165,56 @@ export default function Workout({ id }: WorkoutPageProps) {
   // Track if challenge completion has been triggered
   const [completionTriggered, setCompletionTriggered] = useState(false);
   
-  // Use a ref to track transition status
-  const isTransitioning = useRef(false);
+  // Better transition handling with refs
+  const isTransitioning = useRef(false); 
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const handleExerciseComplete = useCallback(() => {
     console.log("Exercise complete called. Current index:", currentExerciseIndex, "Total exercises:", exercises.length);
-    console.log("Is transitioning:", isTransitioning.current);
     
-    // Prevent multiple transitions at once
+    // Prevent duplicate calls during transition
     if (isTransitioning.current) {
-      console.log("Already transitioning, ignoring call");
+      console.log("Already in transition, ignoring call");
       return;
+    }
+    
+    // Set flag to prevent multiple transitions
+    isTransitioning.current = true;
+    
+    // Clear any existing timeout
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
     }
     
     if (currentExerciseIndex < exercises.length - 1) {
       console.log("Moving to next exercise");
-      // Set transitioning flag
-      isTransitioning.current = true;
       
-      // Use setTimeout to ensure state updates happen in the next cycle
-      setTimeout(() => {
+      // Delay the transition slightly for better UX
+      transitionTimeoutRef.current = setTimeout(() => {
+        // Update exercise index  
         setCurrentExerciseIndex(prev => {
-          console.log("Incrementing from", prev, "to", prev + 1);
+          console.log("Incrementing exercise index from", prev, "to", prev + 1);
           return prev + 1;
         });
         
-        // Reset transitioning flag after a delay
-        setTimeout(() => {
+        // Reset transition flag after another delay to prevent rapid triggers
+        transitionTimeoutRef.current = setTimeout(() => {
           isTransitioning.current = false;
-          console.log("Reset transition flag");
+          console.log("Reset transition flag, ready for next exercise");
         }, 500);
-      }, 200);
+      }, 300);
+      
     } else if (!completionTriggered && !workoutComplete) {
-      console.log("Completing workout");
-      // Prevent multiple completion calls
+      console.log("Completing the entire workout");
       setCompletionTriggered(true);
-      // Use setTimeout to break the potential React state update loop
-      setTimeout(() => {
+      
+      transitionTimeoutRef.current = setTimeout(() => {
         completeChallenge.mutate();
-      }, 200);
+        isTransitioning.current = false;
+      }, 300);
+    } else {
+      // Reset flag if we're not doing anything
+      isTransitioning.current = false;
     }
   }, [currentExerciseIndex, exercises.length, completionTriggered, workoutComplete, completeChallenge]);
   

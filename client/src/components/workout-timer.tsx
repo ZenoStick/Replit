@@ -25,8 +25,9 @@ export function WorkoutTimer({
   const [isPaused, setIsPaused] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   
-  // Add a ref to track if onComplete has been called
-  const onCompleteCalled = useRef(false);
+  // Refs to keep track of completion state
+  const hasCalledComplete = useRef(false);
+  const animationFrameId = useRef<number | null>(null);
   
   // Reset the timer when exercise changes (initialSeconds or targetReps change)
   useEffect(() => {
@@ -35,8 +36,20 @@ export function WorkoutTimer({
     setReps(initialReps);
     setIsPaused(false);
     setIsComplete(false);
-    // Reset the onComplete flag
-    onCompleteCalled.current = false;
+    hasCalledComplete.current = false;
+    
+    // Cancel any pending animation frames
+    if (animationFrameId.current !== null) {
+      cancelAnimationFrame(animationFrameId.current);
+      animationFrameId.current = null;
+    }
+    
+    return () => {
+      // Cleanup when unmounting
+      if (animationFrameId.current !== null) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
   }, [initialSeconds, targetReps, initialReps]);
   
   const formatTime = (totalSeconds: number) => {
@@ -45,26 +58,38 @@ export function WorkoutTimer({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
   
+  // Safely call onComplete exactly once
+  const handleComplete = useCallback(() => {
+    if (!hasCalledComplete.current && !isComplete) {
+      console.log("Marking exercise as complete");
+      hasCalledComplete.current = true;
+      setIsComplete(true);
+      
+      // Use requestAnimationFrame for smoother transitions
+      animationFrameId.current = requestAnimationFrame(() => {
+        console.log("Calling onComplete callback");
+        onComplete();
+        animationFrameId.current = null;
+      });
+    }
+  }, [isComplete, onComplete]);
+  
   const incrementReps = useCallback(() => {
-    if (countReps && !isComplete && !onCompleteCalled.current) {
+    if (countReps && !isComplete && !hasCalledComplete.current) {
       const newReps = reps + 1;
       setReps(newReps);
       
       // Check if target is reached
       if (newReps >= targetReps) {
         console.log("Target reps reached:", newReps, ">=", targetReps);
-        // Prevent multiple calls
-        onCompleteCalled.current = true;
-        // Use setTimeout to avoid state update during render cycle
-        setTimeout(() => {
-          setIsComplete(true);
-        }, 100);
+        handleComplete();
       }
     }
-  }, [countReps, targetReps, isComplete, reps]);
+  }, [countReps, targetReps, isComplete, reps, handleComplete]);
   
+  // Timer for countdown
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: NodeJS.Timeout | null = null;
     
     if (!isPaused && !isComplete && seconds > 0) {
       interval = setInterval(() => {
@@ -72,7 +97,7 @@ export function WorkoutTimer({
           const newSeconds = prev - 1;
           if (newSeconds <= 0 && !countReps) {
             // Timer complete (only if not counting reps)
-            setIsComplete(true);
+            handleComplete();
             return 0;
           }
           return newSeconds;
@@ -83,17 +108,15 @@ export function WorkoutTimer({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isPaused, seconds, isComplete, countReps]);
-  
-  useEffect(() => {
-    if (isComplete) {
-      onComplete();
-    }
-  }, [isComplete, onComplete]);
+  }, [isPaused, seconds, isComplete, countReps, handleComplete]);
   
   const togglePause = () => {
     setIsPaused(prev => !prev);
   };
+  
+  const manualComplete = useCallback(() => {
+    handleComplete();
+  }, [handleComplete]);
   
   return (
     <div className={cn("text-center", className)}>
@@ -140,7 +163,7 @@ export function WorkoutTimer({
           </Button>
         ) : (
           <Button
-            onClick={() => setIsComplete(true)}
+            onClick={manualComplete}
             className="flex-1 bg-primary text-white py-3 rounded-xl font-bold"
             disabled={isComplete}
           >
