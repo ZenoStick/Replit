@@ -37,6 +37,7 @@ export interface IStorage {
   
   // Rewards
   getRewards(): Promise<Reward[]>;
+  getRewardById(id: number): Promise<Reward[]>;
   getUserRewards(userId: number): Promise<Reward[]>;
   redeemReward(userId: number, rewardId: number): Promise<UserReward | undefined>;
   
@@ -260,6 +261,11 @@ export class MemStorage implements IStorage {
   // Reward methods
   async getRewards(): Promise<Reward[]> {
     return Array.from(this.rewards.values());
+  }
+  
+  async getRewardById(id: number): Promise<Reward[]> {
+    const reward = this.rewards.get(id);
+    return reward ? [reward] : [];
   }
   
   async getUserRewards(userId: number): Promise<Reward[]> {
@@ -580,6 +586,10 @@ export class DatabaseStorage implements IStorage {
   // Reward methods
   async getRewards(): Promise<Reward[]> {
     return db.select().from(rewards);
+  }
+  
+  async getRewardById(id: number): Promise<Reward[]> {
+    return db.select().from(rewards).where(eq(rewards.id, id));
   }
   
   async getUserRewards(userId: number): Promise<Reward[]> {

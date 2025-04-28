@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import session from "express-session";
 import { z } from "zod";
 import MemoryStore from "memorystore";
+import Stripe from "stripe";
 import {
   insertUserSchema,
   loginSchema,
@@ -12,6 +13,14 @@ import {
   insertAchievementSchema,
   insertSpinResultSchema
 } from "@shared/schema";
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("Missing required Stripe secret: STRIPE_SECRET_KEY");
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-04-10",
+});
 
 declare module "express-session" {
   interface SessionData {
@@ -293,15 +302,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId!;
       const rewardId = parseInt(req.params.id);
       
-      const userReward = await storage.redeemReward(userId, rewardId);
-      
-      if (!userReward) {
-        return res.status(400).json({ message: "Failed to redeem reward. Check if you have enough points." });
+      // Get the reward details first to check if it's a physical reward
+      const [reward] = await storage.getRewardById(rewardId);
+      if (!reward) {
+        return res.status(404).json({ message: "Reward not found" });
       }
       
-      res.status(200).json(userReward);
+      // If it's a physical/real-world reward that requires shipping or fulfillment
+      if (reward.category === "Real World") {
+        // Validate shipping information if provided in the request
+        const { shippingName, shippingAddress, shippingCity, shippingState, shippingZip, shippingCountry } = req.body;
+        
+        if (!shippingName || !shippingAddress || !shippingCity || !shippingState || !shippingZip || !shippingCountry) {
+          return res.status(400).json({ message: "Shipping information is required for physical rewards" });
+        }
+        
+        const userReward = await storage.redeemReward(userId, rewardId);
+        
+        if (!userReward) {
+          return res.status(400).json({ message: "Failed to redeem reward. Check if you have enough points." });
+        }
+        
+        // For physical rewards, create a Stripe PaymentIntent with $0 amount
+        // This is just to collect shipping details and confirm the order
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: 0, // $0 since the user is paying with points
+          currency: 'usd',
+          metadata: {
+            userId: userId.toString(),
+            rewardId: rewardId.toString(),
+            rewardTitle: reward.title,
+            rewardDescription: reward.description,
+            shippingName,
+            shippingAddress,
+            shippingCity,
+            shippingState,
+            shippingZip,
+            shippingCountry
+          }
+        });
+        
+        return res.status(200).json({ 
+          userReward,
+          clientSecret: paymentIntent.client_secret,
+          isPhysicalReward: true
+        });
+      } else {
+        // For digital rewards, just redeem normally
+        const userReward = await storage.redeemReward(userId, rewardId);
+        
+        if (!userReward) {
+          return res.status(400).json({ message: "Failed to redeem reward. Check if you have enough points." });
+        }
+        
+        return res.status(200).json({ 
+          userReward, 
+          isPhysicalReward: false 
+        });
+      }
     } catch (error) {
+      console.error("Error redeeming reward:", error);
       res.status(500).json({ message: "Server error redeeming reward" });
+    }
+  });
+  
+  // Endpoint to create a payment intent for real-world rewards
+  app.post("/api/create-payment-intent", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const { rewardId, shippingInfo } = req.body;
+      
+      if (!rewardId) {
+        return res.status(400).json({ message: "Reward ID is required" });
+      }
+      
+      // Get the reward to check its value
+      const [reward] = await storage.getRewardById(parseInt(rewardId));
+      if (!reward) {
+        return res.status(404).json({ message: "Reward not found" });
+      }
+      
+      // Create a payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: 0, // Free since paid with points
+        currency: "usd",
+        metadata: {
+          userId: userId.toString(),
+          rewardId: rewardId.toString(),
+          rewardTitle: reward.title,
+          ...shippingInfo
+        }
+      });
+      
+      res.status(200).json({ clientSecret: paymentIntent.client_secret });
+    } catch (error) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ message: "Failed to create payment intent" });
     }
   });
 
