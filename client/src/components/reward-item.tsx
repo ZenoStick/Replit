@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 interface RewardItemProps {
   id: number;
@@ -32,30 +33,51 @@ export function RewardItem({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isHovered, setIsHovered] = useState(false);
+  const [, setLocation] = useLocation();
   
   const getIconClass = (iconName: string) => {
     return `fas fa-${iconName}`;
   };
 
   const canAfford = userPoints >= pointsCost;
+
+  // Check if this is a real-world (physical) reward
+  const isPhysicalReward = category === "Real World";
   
   const redeemReward = useMutation({
     mutationFn: async () => {
-      await apiRequest('POST', `/api/rewards/${id}/redeem`, {});
+      // For digital rewards, complete the redemption process immediately
+      if (!isPhysicalReward) {
+        await apiRequest('POST', `/api/rewards/${id}/redeem`, {});
+      } else {
+        // For physical rewards, redirect to checkout page
+        const params = new URLSearchParams({
+          rewardId: id.toString(),
+          title,
+          description: description || ""
+        });
+        
+        setLocation(`/checkout?${params.toString()}`);
+        return; // Don't perform API call here, will be done in checkout
+      }
     },
     onSuccess: () => {
-      toast({
-        title: "Reward Redeemed!",
-        description: `You've successfully redeemed ${title}`,
-        variant: "default"
-      });
-      
-      if (onRedeem) {
-        onRedeem();
+      // Only show success toast for digital rewards
+      // Physical rewards will show success in the checkout page
+      if (!isPhysicalReward) {
+        toast({
+          title: "Reward Redeemed!",
+          description: `You've successfully redeemed ${title}`,
+          variant: "default"
+        });
+        
+        if (onRedeem) {
+          onRedeem();
+        }
+        
+        queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/user/rewards'] });
       }
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/user/rewards'] });
     },
     onError: (error) => {
       toast({

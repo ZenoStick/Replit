@@ -17,6 +17,7 @@ const Workout = lazy(() => import("@/pages/workout"));
 const Rewards = lazy(() => import("@/pages/rewards"));
 const Profile = lazy(() => import("@/pages/profile"));
 const Spin = lazy(() => import("@/pages/spin"));
+const Checkout = lazy(() => import("@/pages/checkout"));
 
 function Router() {
   const [location] = useLocation();
@@ -70,7 +71,8 @@ function Router() {
     location !== "/" && 
     location !== "/onboarding" && 
     location !== "/workout" &&
-    location !== "/spin";
+    location !== "/spin" &&
+    location !== "/checkout";
 
   return (
     <>
@@ -120,6 +122,11 @@ function Router() {
           <Route path="/spin">
             <ProtectedRoute>
               <Spin />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/checkout">
+            <ProtectedRoute>
+              <Checkout />
             </ProtectedRoute>
           </Route>
           <Route component={NotFound} />
