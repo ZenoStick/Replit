@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
-  <rect width="800" height="400" fill="#F0F9FF" />
-  <rect x="100" y="100" width="600" height="200" rx="20" fill="#C7E8CA" />
-  <text x="400" y="170" font-family="Arial" font-size="30" font-weight="bold" text-anchor="middle" fill="#1A5336">Beginner Workout</text>
-  <text x="400" y="230" font-family="Arial" font-size="20" text-anchor="middle" fill="#1A5336">Perfect for getting started</text>
-  <circle cx="250" cy="300" r="30" fill="#4ADE80" />
-  <circle cx="400" cy="300" r="30" fill="#4ADE80" />
-  <circle cx="550" cy="300" r="30" fill="#4ADE80" />
+  <rect width="800" height="400" fill="#F0FDF4" />
+  <rect x="100" y="100" width="600" height="200" rx="20" fill="#DCFCE7" />
+  <text x="400" y="170" font-family="Arial" font-size="30" font-weight="bold" text-anchor="middle" fill="#16A34A">Beginner Workout</text>
+  <text x="400" y="230" font-family="Arial" font-size="20" text-anchor="middle" fill="#16A34A">Start your fitness journey</text>
+  <polygon points="250,270 280,330 220,330" fill="#22C55E" />
+  <polygon points="400,270 430,330 370,330" fill="#22C55E" />
+  <polygon points="550,270 580,330 520,330" fill="#22C55E" />
 </svg>

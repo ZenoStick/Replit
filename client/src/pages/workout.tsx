@@ -181,7 +181,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         reps: 10,
         difficultyLevel: 'advanced',
         caloriesBurnedPerMinute: 12,
-        imageUrl: "/assets/workouts/plyo-pushups.jpg"
+        imageUrl: "/assets/workouts/advanced-workout.svg"
       },
       {
         id: 10,
@@ -196,7 +196,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         reps: 16, // 8 per leg
         difficultyLevel: 'advanced',
         caloriesBurnedPerMinute: 11,
-        imageUrl: "/assets/workouts/pistol-squats.jpg"
+        imageUrl: "/assets/workouts/advanced-workout.svg"
       },
       {
         id: 11,
@@ -211,7 +211,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         duration: 45,
         difficultyLevel: 'advanced',
         caloriesBurnedPerMinute: 8,
-        imageUrl: "/assets/workouts/hollow-body.jpg"
+        imageUrl: "/assets/workouts/advanced-workout.svg"
       },
       {
         id: 12,
@@ -226,7 +226,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         reps: 15,
         difficultyLevel: 'advanced',
         caloriesBurnedPerMinute: 15,
-        imageUrl: "/assets/workouts/burpees.jpg"
+        imageUrl: "/assets/workouts/advanced-workout.svg"
       }
     ]
   };
@@ -478,26 +478,26 @@ export default function Workout({ id }: WorkoutPageProps) {
                   <span className="text-primary font-bold">{challenge?.points || 20} points</span>
                 </div>
                 
-                <div className="rounded-2xl bg-gray-100 overflow-hidden mb-4">
+                <div className="rounded-2xl bg-gray-100 overflow-hidden mb-4 border-2 border-violet-700">
                   <img 
                     src={currentExercise.imageUrl} 
                     alt={`${currentExercise.name} demonstration`} 
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 sm:h-64 object-contain"
                   />
                 </div>
                 
-                <h4 className="font-heading font-bold text-lg mb-1">{currentExercise.name}</h4>
-                <p className="text-gray-600 text-sm mb-4">{currentExercise.description}</p>
+                <h4 className="font-heading font-bold text-xl md:text-2xl mb-2 text-primary">{currentExercise.name}</h4>
+                <p className="text-gray-700 text-sm md:text-base mb-5">{currentExercise.description}</p>
                 
                 <div className="bg-primary bg-opacity-10 p-4 rounded-xl mb-4">
-                  <h5 className="font-bold text-primary mb-2">Instructions</h5>
-                  <ul className="text-gray-700 text-sm space-y-2">
+                  <h5 className="font-bold text-primary mb-3">Instructions</h5>
+                  <ul className="text-gray-700 text-sm md:text-base space-y-3">
                     {currentExercise.instructions.map((instruction, index) => (
                       <li key={index} className="flex items-start">
-                        <span className="h-5 w-5 rounded-full bg-primary text-white flex items-center justify-center text-xs mr-2 mt-0.5">
+                        <span className="h-6 w-6 rounded-full bg-primary text-white flex items-center justify-center text-xs mr-3 mt-0.5 flex-shrink-0">
                           {index + 1}
                         </span>
-                        <span>{instruction}</span>
+                        <span className="leading-relaxed">{instruction}</span>
                       </li>
                     ))}
                   </ul>
@@ -523,17 +523,17 @@ export default function Workout({ id }: WorkoutPageProps) {
               </CardContent>
             </Card>
             
-            <h3 className="font-heading font-bold text-lg mb-4">Coming Up Next</h3>
+            <h3 className="font-heading font-bold text-xl text-primary mb-4">Coming Up Next</h3>
             
-            <div className="space-y-3 mb-20">
+            <div className="space-y-3 mb-24">
               {exercises.slice(currentExerciseIndex + 1).map((exercise, index) => (
-                <div key={exercise.id} className="flex items-center bg-white rounded-xl p-3 shadow-sm">
-                  <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-                    <span className="font-bold">{currentExerciseIndex + index + 2}</span>
+                <div key={exercise.id} className="flex items-center bg-white rounded-xl p-4 shadow-md border-l-4 border-primary">
+                  <div className="h-12 w-12 rounded-full bg-primary bg-opacity-10 flex items-center justify-center mr-4 text-primary">
+                    <span className="font-bold text-lg">{currentExerciseIndex + index + 2}</span>
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium">{exercise.name}</h4>
-                    <span className="text-xs text-gray-600">
+                    <h4 className="font-medium text-base">{exercise.name}</h4>
+                    <span className="text-sm text-gray-600">
                       {exercise.reps 
                         ? `${exercise.reps} reps` 
                         : exercise.duration 
@@ -545,13 +545,13 @@ export default function Workout({ id }: WorkoutPageProps) {
               ))}
               
               {currentExerciseIndex === exercises.length - 1 && (
-                <div className="flex items-center bg-white rounded-xl p-3 shadow-sm">
-                  <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-                    <i className="fas fa-flag-checkered"></i>
+                <div className="flex items-center bg-white rounded-xl p-4 shadow-md border-l-4 border-green-500">
+                  <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mr-4 text-green-600">
+                    <i className="fas fa-flag-checkered text-lg"></i>
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium">Finish Workout</h4>
-                    <span className="text-xs text-gray-600">Almost there!</span>
+                    <h4 className="font-medium text-base">Finish Workout</h4>
+                    <span className="text-sm text-green-600 font-medium">Almost there! You got this!</span>
                   </div>
                 </div>
               )}
