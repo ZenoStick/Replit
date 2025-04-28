@@ -509,7 +509,13 @@ export default function Workout({ id }: WorkoutPageProps) {
                   initialReps={0}
                   targetReps={currentExercise.reps || 0}
                   countReps={!!currentExercise.reps}
-                  difficultyLevel={currentExercise.difficultyLevel || difficultyLevel}
+                  difficultyLevel={
+                    (currentExercise.difficultyLevel === 'beginner' || 
+                     currentExercise.difficultyLevel === 'intermediate' || 
+                     currentExercise.difficultyLevel === 'advanced') 
+                      ? currentExercise.difficultyLevel 
+                      : difficultyLevel
+                  }
                   caloriesBurnedPerMinute={currentExercise.caloriesBurnedPerMinute || 5}
                   onComplete={handleExerciseComplete}
                   className="mb-6 border-2 border-violet-700 rounded-xl p-4"

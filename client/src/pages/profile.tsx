@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { BadgeItem } from "@/components/badge-item";
+import { BMICalculator } from "@/components/bmi-calculator";
 import { User, Achievement } from "@shared/schema";
 import { truncateText } from "@/lib/utils";
 
@@ -137,7 +140,7 @@ export default function Profile() {
             <div className="bg-gray-100 rounded-2xl p-4">
               <div className="flex justify-between items-center mb-2">
                 <span className="font-medium">Level Progress</span>
-                <span className="text-sm text-primary font-bold">Level {user?.level + 1} in {pointsToNextLevel()} pts</span>
+                <span className="text-sm text-primary font-bold">Level {(user?.level || 1) + 1} in {pointsToNextLevel()} pts</span>
               </div>
               <div className="w-full bg-gray-300 rounded-full h-3 mb-1">
                 <div 
@@ -211,21 +214,92 @@ export default function Profile() {
         </Card>
       </motion.div>
       
-      {/* Badges Section */}
-      <motion.h3 className="font-heading font-bold text-xl mb-4" variants={itemVariants}>
-        My Badges
-      </motion.h3>
-      
-      <motion.div className="grid grid-cols-4 gap-3 mb-6" variants={itemVariants}>
-        {badges.map((badge) => (
-          <BadgeItem
-            key={badge.id}
-            title={badge.title}
-            icon={badge.icon}
-            color={badge.color}
-            secondaryColor={badge.secondaryColor}
-          />
-        ))}
+      {/* Badges and Health Sections */}
+      <motion.div className="mb-6" variants={itemVariants}>
+        <Tabs defaultValue="badges" className="w-full">
+          <TabsList className="w-full grid grid-cols-3 mb-4 border-2 border-violet-700">
+            <TabsTrigger value="badges">My Badges</TabsTrigger>
+            <TabsTrigger value="bmi">BMI Calculator</TabsTrigger>
+            <TabsTrigger value="customize">Customize</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="badges">
+            <motion.div className="grid grid-cols-4 gap-3" variants={itemVariants}>
+              {badges.map((badge) => (
+                <BadgeItem
+                  key={badge.id}
+                  title={badge.title}
+                  icon={badge.icon}
+                  color={badge.color}
+                  secondaryColor={badge.secondaryColor}
+                />
+              ))}
+            </motion.div>
+          </TabsContent>
+          
+          <TabsContent value="bmi">
+            <BMICalculator className="w-full" />
+          </TabsContent>
+          
+          <TabsContent value="customize">
+            <Card className="border-2 border-violet-700">
+              <CardContent className="p-4">
+                <h3 className="font-bold text-lg mb-3">Profile Customization</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Choose Avatar</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 2, 3, 4, 5, 6].map((id) => (
+                        <button
+                          key={id}
+                          className="rounded-full w-14 h-14 overflow-hidden border-2 border-transparent hover:border-primary transition-all"
+                        >
+                          <img 
+                            src={`https://images.unsplash.com/photo-1${530000000 + id * 100}?w=56&h=56&fit=crop`}
+                            alt={`Avatar option ${id}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-2">Fitness Goals</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {["Weight Loss", "Muscle Gain", "Endurance", "Flexibility", "General Fitness", "Sports Performance"].map((goal) => (
+                        <Button 
+                          key={goal}
+                          variant="outline"
+                          className="border-2 border-gray-200 hover:border-primary"
+                        >
+                          {goal}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium mb-2">Theme Color</h4>
+                    <div className="flex gap-2">
+                      {["bg-primary", "bg-accent", "bg-secondary", "bg-nature", "bg-energy"].map((color) => (
+                        <button
+                          key={color}
+                          className={`${color} w-8 h-8 rounded-full border-2 border-gray-200 hover:border-black`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <Button className="w-full bg-primary text-white border-2 border-violet-700">
+                    Save Changes
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </motion.div>
       
       {/* Settings Section */}
