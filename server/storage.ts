@@ -107,7 +107,10 @@ export class MemStorage implements IStorage {
       level: 1, 
       points: 0, 
       streakDays: 0,
-      createdAt: now
+      createdAt: now,
+      avatarId: insertUser.avatarId || 1,
+      fitnessGoal: insertUser.fitnessGoal || null,
+      workoutDaysPerWeek: insertUser.workoutDaysPerWeek || 3
     };
     this.users.set(id, user);
     
@@ -162,7 +165,9 @@ export class MemStorage implements IStorage {
       ...insertChallenge, 
       id, 
       isComplete: false, 
-      progress: 0 
+      progress: 0,
+      duration: insertChallenge.duration || null,
+      reps: insertChallenge.reps || null
     };
     this.challenges.set(id, challenge);
     return challenge;
@@ -316,7 +321,8 @@ export class MemStorage implements IStorage {
     const spinResult: SpinResult = { 
       ...insertSpinResult, 
       id,
-      spinDate: now
+      spinDate: now,
+      points: insertSpinResult.points || null
     };
     this.spinResults.set(id, spinResult);
     
