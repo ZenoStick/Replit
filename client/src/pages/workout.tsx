@@ -57,7 +57,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         reps: 8,
         difficultyLevel: 'beginner',
         caloriesBurnedPerMinute: 3,
-        imageUrl: "/assets/workouts/modified-pushups.jpg"
+        imageUrl: "/assets/workouts/beginner-workout.svg"
       },
       {
         id: 2,
@@ -72,7 +72,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         reps: 12,
         difficultyLevel: 'beginner',
         caloriesBurnedPerMinute: 5,
-        imageUrl: "/assets/workouts/bodyweight-squats.jpg"
+        imageUrl: "/assets/workouts/beginner-workout.svg"
       },
       {
         id: 3,
@@ -87,7 +87,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         duration: 20,
         difficultyLevel: 'beginner',
         caloriesBurnedPerMinute: 4,
-        imageUrl: "/assets/workouts/basic-plank.jpg"
+        imageUrl: "/assets/workouts/beginner-workout.svg"
       },
       {
         id: 4,
@@ -102,7 +102,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         duration: 30,
         difficultyLevel: 'beginner',
         caloriesBurnedPerMinute: 6,
-        imageUrl: "/assets/workouts/marching.jpg"
+        imageUrl: "/assets/workouts/beginner-workout.svg"
       }
     ],
     intermediate: [
@@ -119,7 +119,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         reps: 12,
         difficultyLevel: 'intermediate',
         caloriesBurnedPerMinute: 7,
-        imageUrl: "/assets/workouts/standard-pushups.jpg"
+        imageUrl: "/assets/workouts/intermediate-workout.svg"
       },
       {
         id: 6,
@@ -134,7 +134,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         reps: 15,
         difficultyLevel: 'intermediate',
         caloriesBurnedPerMinute: 10,
-        imageUrl: "/assets/workouts/jump-squats.jpg"
+        imageUrl: "/assets/workouts/intermediate-workout.svg"
       },
       {
         id: 7,
@@ -149,7 +149,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         duration: 60, // 30 seconds per side
         difficultyLevel: 'intermediate',
         caloriesBurnedPerMinute: 6,
-        imageUrl: "/assets/workouts/side-plank.jpg"
+        imageUrl: "/assets/workouts/intermediate-workout.svg"
       },
       {
         id: 8,
@@ -164,7 +164,7 @@ export default function Workout({ id }: WorkoutPageProps) {
         duration: 45,
         difficultyLevel: 'intermediate',
         caloriesBurnedPerMinute: 12,
-        imageUrl: "/assets/workouts/mountain-climbers.jpg"
+        imageUrl: "/assets/workouts/intermediate-workout.svg"
       }
     ],
     advanced: [

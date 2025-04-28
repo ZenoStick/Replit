@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <rect width="800" height="400" fill="#FEF2F2" />
+  <rect x="100" y="100" width="600" height="200" rx="20" fill="#FEE2E2" />
+  <text x="400" y="170" font-family="Arial" font-size="30" font-weight="bold" text-anchor="middle" fill="#B91C1C">Advanced Workout</text>
+  <text x="400" y="230" font-family="Arial" font-size="20" text-anchor="middle" fill="#B91C1C">Push your limits</text>
+  <polygon points="250,270 280,330 220,330" fill="#EF4444" />
+  <polygon points="400,270 430,330 370,330" fill="#EF4444" />
+  <polygon points="550,270 580,330 520,330" fill="#EF4444" />
+</svg>
