@@ -436,7 +436,11 @@ export class MemStorage implements IStorage {
     
     for (const reward of defaultRewards) {
       const id = this.currentRewardId++;
-      this.rewards.set(id, { ...reward, id });
+      this.rewards.set(id, { 
+        ...reward, 
+        id,
+        isAvailable: reward.isAvailable || true 
+      });
     }
   }
 }

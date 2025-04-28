@@ -29,7 +29,7 @@ declare module "express-session" {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Set up session middleware
+  // Set up session middleware - MUST COME FIRST
   const MemoryStoreSession = MemoryStore(session);
   app.use(
     session({
@@ -45,6 +45,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       },
     })
   );
+  
+  // Test route for creating a default user (for development only)
+  app.get("/api/test/create-user", async (req, res) => {
+    try {
+      // Check if test user already exists
+      const existingUser = await storage.getUserByEmail("test@example.com");
+      if (existingUser) {
+        // Set user session for existing user
+        req.session.userId = existingUser.id;
+        
+        const { password, ...userWithoutPassword } = existingUser;
+        return res.status(200).json({
+          message: "Test user already exists, session created", 
+          user: userWithoutPassword
+        });
+      }
+      
+      // Create a test user
+      const user = await storage.createUser({
+        username: "testuser",
+        email: "test@example.com",
+        password: "password123",
+        avatarId: 1,
+        fitnessGoal: "Weight Loss",
+        workoutDaysPerWeek: 3
+      });
+      
+      // Set user session
+      req.session.userId = user.id;
+      
+      // Remove password from the response
+      const { password, ...userResponse } = user;
+      res.status(201).json({message: "Test user created and logged in", user: userResponse});
+    } catch (error) {
+      console.error("Error creating test user:", error);
+      res.status(500).json({ message: "Error creating test user" });
+    }
+  });
 
   // Authentication middleware
   const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
