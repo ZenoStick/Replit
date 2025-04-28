@@ -41,58 +41,201 @@ export default function Workout({ id }: WorkoutPageProps) {
     }
   });
   
-  // Mock exercises for the workout
-  const exercises: Exercise[] = [
-    {
-      id: 1,
-      name: "Push-ups",
-      description: "Complete 10 push-ups with proper form",
-      instructions: [
-        "Start in a plank position with hands shoulder-width apart",
-        "Lower your body until your chest nearly touches the floor",
-        "Push back up to the starting position"
-      ],
-      reps: 10,
-      imageUrl: "https://images.unsplash.com/photo-1576678927484-cc907957088c?w=500&h=300&fit=crop"
-    },
-    {
-      id: 2,
-      name: "Squats",
-      description: "Perform 15 squats",
-      instructions: [
-        "Stand with feet shoulder-width apart",
-        "Lower your body as if sitting in a chair",
-        "Keep your back straight and knees behind toes",
-        "Return to standing position"
-      ],
-      reps: 15,
-      imageUrl: "https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=500&h=300&fit=crop"
-    },
-    {
-      id: 3,
-      name: "Plank",
-      description: "Hold a plank position for 30 seconds",
-      instructions: [
-        "Start in a push-up position, then lower onto forearms",
-        "Keep your body in a straight line from head to heels",
-        "Engage your core and hold the position"
-      ],
-      duration: 30,
-      imageUrl: "https://images.unsplash.com/photo-1566241142559-40a9552bd7ad?w=500&h=300&fit=crop"
-    },
-    {
-      id: 4,
-      name: "Jumping Jacks",
-      description: "Complete 20 jumping jacks",
-      instructions: [
-        "Stand with feet together and arms at sides",
-        "Jump to spread legs and raise arms overhead",
-        "Jump back to starting position"
-      ],
-      reps: 20,
-      imageUrl: "https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?w=500&h=300&fit=crop"
-    }
-  ];
+  // Categorized exercises by difficulty level
+  const exercisesByLevel = {
+    beginner: [
+      {
+        id: 1,
+        name: "Modified Push-ups",
+        description: "Complete 8 push-ups from knees with proper form",
+        instructions: [
+          "Start in a modified plank position with knees on the ground",
+          "Lower your chest toward the floor while maintaining a straight back",
+          "Push back up to the starting position",
+          "Focus on quality over quantity"
+        ],
+        reps: 8,
+        difficultyLevel: 'beginner',
+        caloriesBurnedPerMinute: 3,
+        imageUrl: "/assets/workouts/modified-pushups.jpg"
+      },
+      {
+        id: 2,
+        name: "Bodyweight Squats",
+        description: "Perform 12 slow bodyweight squats",
+        instructions: [
+          "Stand with feet shoulder-width apart",
+          "Lower your body as if sitting in a chair to a comfortable depth",
+          "Keep your back straight and knees tracking over toes",
+          "Return to standing position"
+        ],
+        reps: 12,
+        difficultyLevel: 'beginner',
+        caloriesBurnedPerMinute: 5,
+        imageUrl: "/assets/workouts/bodyweight-squats.jpg"
+      },
+      {
+        id: 3,
+        name: "Basic Plank",
+        description: "Hold a plank position for 20 seconds",
+        instructions: [
+          "Start in a push-up position, then lower onto forearms",
+          "Keep your body in a straight line from head to heels",
+          "Engage your core and hold the position",
+          "Focus on proper form over duration"
+        ],
+        duration: 20,
+        difficultyLevel: 'beginner',
+        caloriesBurnedPerMinute: 4,
+        imageUrl: "/assets/workouts/basic-plank.jpg"
+      },
+      {
+        id: 4,
+        name: "Marching in Place",
+        description: "Complete 30 seconds of marching in place",
+        instructions: [
+          "Stand tall with good posture",
+          "Lift knees to hip level alternately",
+          "Swing arms naturally as you march",
+          "Keep a steady, comfortable pace"
+        ],
+        duration: 30,
+        difficultyLevel: 'beginner',
+        caloriesBurnedPerMinute: 6,
+        imageUrl: "/assets/workouts/marching.jpg"
+      }
+    ],
+    intermediate: [
+      {
+        id: 5,
+        name: "Standard Push-ups",
+        description: "Complete 12 full push-ups with proper form",
+        instructions: [
+          "Start in a plank position with hands slightly wider than shoulder-width",
+          "Lower your body until your chest nearly touches the floor",
+          "Keep elbows at a 45-degree angle to your body",
+          "Push back up to the starting position"
+        ],
+        reps: 12,
+        difficultyLevel: 'intermediate',
+        caloriesBurnedPerMinute: 7,
+        imageUrl: "/assets/workouts/standard-pushups.jpg"
+      },
+      {
+        id: 6,
+        name: "Jump Squats",
+        description: "Perform 15 jump squats with control",
+        instructions: [
+          "Stand with feet shoulder-width apart",
+          "Lower into a squat position",
+          "Explosively jump upward",
+          "Land softly and immediately lower into the next squat"
+        ],
+        reps: 15,
+        difficultyLevel: 'intermediate',
+        caloriesBurnedPerMinute: 10,
+        imageUrl: "/assets/workouts/jump-squats.jpg"
+      },
+      {
+        id: 7,
+        name: "Side Plank",
+        description: "Hold a side plank for 30 seconds each side",
+        instructions: [
+          "Lie on your side with legs extended",
+          "Prop your upper body up on your forearm",
+          "Raise hips to create a straight line from head to feet",
+          "Hold position, then switch sides"
+        ],
+        duration: 60, // 30 seconds per side
+        difficultyLevel: 'intermediate',
+        caloriesBurnedPerMinute: 6,
+        imageUrl: "/assets/workouts/side-plank.jpg"
+      },
+      {
+        id: 8,
+        name: "Mountain Climbers",
+        description: "Complete 45 seconds of mountain climbers",
+        instructions: [
+          "Start in a plank position with arms straight",
+          "Alternately drive knees toward chest in a running motion",
+          "Keep hips low and core engaged",
+          "Maintain a brisk, controlled pace"
+        ],
+        duration: 45,
+        difficultyLevel: 'intermediate',
+        caloriesBurnedPerMinute: 12,
+        imageUrl: "/assets/workouts/mountain-climbers.jpg"
+      }
+    ],
+    advanced: [
+      {
+        id: 9,
+        name: "Plyometric Push-ups",
+        description: "Complete 10 explosive push-ups with hand clap",
+        instructions: [
+          "Start in standard push-up position",
+          "Lower your body toward the floor",
+          "Push up explosively so hands leave the ground",
+          "Clap hands in mid-air if possible before landing"
+        ],
+        reps: 10,
+        difficultyLevel: 'advanced',
+        caloriesBurnedPerMinute: 12,
+        imageUrl: "/assets/workouts/plyo-pushups.jpg"
+      },
+      {
+        id: 10,
+        name: "Pistol Squats",
+        description: "Perform 8 pistol squats (single-leg squats) per leg",
+        instructions: [
+          "Stand on one leg, extending the other leg forward",
+          "Lower your body while keeping the extended leg off the ground",
+          "Maintain balance as you lower to a full squat position",
+          "Return to standing using just one leg, then switch sides"
+        ],
+        reps: 16, // 8 per leg
+        difficultyLevel: 'advanced',
+        caloriesBurnedPerMinute: 11,
+        imageUrl: "/assets/workouts/pistol-squats.jpg"
+      },
+      {
+        id: 11,
+        name: "Hollow Body Hold",
+        description: "Hold hollow body position for 45 seconds",
+        instructions: [
+          "Lie on your back with arms extended overhead",
+          "Lift shoulders and legs off the ground",
+          "Create a curved shape with your body",
+          "Hold position while keeping lower back pressed into the floor"
+        ],
+        duration: 45,
+        difficultyLevel: 'advanced',
+        caloriesBurnedPerMinute: 8,
+        imageUrl: "/assets/workouts/hollow-body.jpg"
+      },
+      {
+        id: 12,
+        name: "Burpees",
+        description: "Complete 15 full burpees with push-up",
+        instructions: [
+          "Begin standing, then squat and place hands on floor",
+          "Jump feet back to plank position",
+          "Perform a push-up",
+          "Jump feet forward to hands, then explosively jump up with arms overhead"
+        ],
+        reps: 15,
+        difficultyLevel: 'advanced',
+        caloriesBurnedPerMinute: 15,
+        imageUrl: "/assets/workouts/burpees.jpg"
+      }
+    ]
+  };
+
+  // Default to beginner exercises
+  const [difficultyLevel, setDifficultyLevel] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner');
+  
+  // Get exercises based on selected difficulty
+  const exercises = exercisesByLevel[difficultyLevel];
   
   const defaultChallenge: Challenge = {
     id: 0,
@@ -256,16 +399,49 @@ export default function Workout({ id }: WorkoutPageProps) {
       animate="visible"
       exit="exit"
     >
-      <motion.div className="flex items-center mb-6" variants={itemVariants}>
+      <motion.div className="flex items-center mb-4" variants={itemVariants}>
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate("/home")}
-          className="mr-4"
+          className="mr-4 border-2 border-violet-700"
         >
           <i className="fas fa-arrow-left text-xl"></i>
         </Button>
         <h2 className="font-heading font-bold text-2xl">{challenge?.title}</h2>
+      </motion.div>
+      
+      <motion.div className="flex flex-wrap gap-2 mb-6 overflow-x-auto" variants={itemVariants}>
+        <Button
+          onClick={() => setDifficultyLevel('beginner')}
+          className={`px-4 py-1 rounded-full text-sm font-medium border-2 ${
+            difficultyLevel === 'beginner' 
+              ? 'bg-green-500 border-violet-700 text-white' 
+              : 'bg-white border-green-500 text-green-500'
+          }`}
+        >
+          Beginner
+        </Button>
+        <Button
+          onClick={() => setDifficultyLevel('intermediate')}
+          className={`px-4 py-1 rounded-full text-sm font-medium border-2 ${
+            difficultyLevel === 'intermediate' 
+              ? 'bg-yellow-500 border-violet-700 text-white' 
+              : 'bg-white border-yellow-500 text-yellow-500'
+          }`}
+        >
+          Intermediate
+        </Button>
+        <Button
+          onClick={() => setDifficultyLevel('advanced')}
+          className={`px-4 py-1 rounded-full text-sm font-medium border-2 ${
+            difficultyLevel === 'advanced' 
+              ? 'bg-red-500 border-violet-700 text-white' 
+              : 'bg-white border-red-500 text-red-500'
+          }`}
+        >
+          Advanced
+        </Button>
       </motion.div>
       
       <AnimatePresence mode="wait">
@@ -333,8 +509,10 @@ export default function Workout({ id }: WorkoutPageProps) {
                   initialReps={0}
                   targetReps={currentExercise.reps || 0}
                   countReps={!!currentExercise.reps}
+                  difficultyLevel={currentExercise.difficultyLevel || difficultyLevel}
+                  caloriesBurnedPerMinute={currentExercise.caloriesBurnedPerMinute || 5}
                   onComplete={handleExerciseComplete}
-                  className="mb-6"
+                  className="mb-6 border-2 border-violet-700 rounded-xl p-4"
                 />
               </CardContent>
             </Card>

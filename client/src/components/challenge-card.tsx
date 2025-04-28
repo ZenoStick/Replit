@@ -159,13 +159,17 @@ export function ChallengeCard({
             Done
           </div>
         ) : category === "Hydration" ? (
-          <div className="bg-gray-200 text-gray-600 px-4 py-2 rounded-xl font-bold text-sm">
+          <Button 
+            onClick={handleAction}
+            className={cn("px-4 py-2 rounded-xl font-bold text-sm border-2 border-violet-700", getCategoryColor(category))}
+            disabled={updateProgress.isPending || completeChallenge.isPending}
+          >
             {Math.floor(currentProgress * reps! / 100)}/{reps} cups
-          </div>
+          </Button>
         ) : (
           <Button 
             onClick={handleAction}
-            className={cn("px-4 py-2 rounded-xl font-bold text-sm", getCategoryColor(category))}
+            className={cn("px-4 py-2 rounded-xl font-bold text-sm border-2 border-violet-700", getCategoryColor(category))}
             disabled={updateProgress.isPending || completeChallenge.isPending}
           >
             {category === "Fitness" ? "Start" : "Log"}
