@@ -46,6 +46,12 @@ export interface IStorage {
   getSpinHistory(userId: number): Promise<SpinResult[]>;
   createSpinResult(spinResult: InsertSpinResult): Promise<SpinResult>;
   
+  // Workout History and Analytics
+  getWorkoutHistory(userId: number): Promise<WorkoutHistory[]>;
+  getWorkoutHistoryById(id: number): Promise<WorkoutHistory | undefined>;
+  createWorkoutHistory(workoutHistory: InsertWorkoutHistory): Promise<WorkoutHistory>;
+  getWorkoutAnalytics(userId: number): Promise<any>;
+  
   // Leaderboard
   getLeaderboard(): Promise<User[]>;
 }

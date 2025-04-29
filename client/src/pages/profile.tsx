@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import { queryClient } from "@/lib/queryClient";
 export default function Profile() {
   // Get toast
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   
   // Get user data
   const { data: user, isLoading: isUserLoading } = useQuery<User>({
@@ -430,9 +432,9 @@ export default function Profile() {
               if (response.ok) {
                 // Clear any cached query data
                 queryClient.clear();
-                setTimeout(() => {
-                  window.location.href = "/";
-                }, 100);
+                // Import navigate at the top of the file
+                // Use navigate instead of window.location
+                navigate("/");
               }
             })
             .catch(err => {

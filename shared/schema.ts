@@ -184,6 +184,9 @@ export type UserReward = typeof userRewards.$inferSelect;
 export type InsertSpinResult = z.infer<typeof insertSpinResultSchema>;
 export type SpinResult = typeof spinResults.$inferSelect;
 
+export type InsertWorkoutHistory = z.infer<typeof insertWorkoutHistorySchema>;
+export type WorkoutHistory = typeof workoutHistory.$inferSelect;
+
 export type Login = z.infer<typeof loginSchema>;
 
 // Avatar types
@@ -209,7 +212,8 @@ export const usersRelations = relations(users, ({ many }) => ({
   workouts: many(workouts),
   achievements: many(achievements),
   userRewards: many(userRewards),
-  spinResults: many(spinResults)
+  spinResults: many(spinResults),
+  workoutHistory: many(workoutHistory)
 }));
 
 export const challengesRelations = relations(challenges, ({ one }) => ({
@@ -252,5 +256,20 @@ export const spinResultsRelations = relations(spinResults, ({ one }) => ({
   user: one(users, {
     fields: [spinResults.userId],
     references: [users.id]
+  })
+}));
+
+export const workoutHistoryRelations = relations(workoutHistory, ({ one }) => ({
+  user: one(users, {
+    fields: [workoutHistory.userId],
+    references: [users.id]
+  }),
+  workout: one(workouts, {
+    fields: [workoutHistory.workoutId],
+    references: [workouts.id]
+  }),
+  challenge: one(challenges, {
+    fields: [workoutHistory.challengeId],
+    references: [challenges.id]
   })
 }));
