@@ -23,7 +23,8 @@ export default function Login({ setIsAuthenticated }: LoginProps) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    username: ""
+    username: "",
+    confirmPassword: ""
   });
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,17 +99,37 @@ export default function Login({ setIsAuthenticated }: LoginProps) {
     e.preventDefault();
     
     if (isSignUp) {
-      // Validate form
-      if (!formData.email || !formData.password || !formData.username) {
+      // Validate form for signup
+      if (!formData.email || !formData.password || !formData.username || !formData.confirmPassword) {
         toast({
           title: "Missing Information",
-          description: "Please fill in all fields",
+          description: "Please fill in all required fields",
           variant: "destructive"
         });
         return;
       }
+      
+      if (formData.password.length < 6) {
+        toast({
+          title: "Password Too Short",
+          description: "Password must be at least 6 characters long",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (formData.password !== formData.confirmPassword) {
+        toast({
+          title: "Password Mismatch",
+          description: "Password and confirmation do not match",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       register.mutate();
     } else {
+      // Validate form for login
       if (!formData.email || !formData.password) {
         toast({
           title: "Missing Information",
@@ -156,7 +177,14 @@ export default function Login({ setIsAuthenticated }: LoginProps) {
                 <span className="text-white text-3xl font-bold">FQ</span>
               </div>
               <h1 className="font-heading font-extrabold text-3xl text-primary mb-2">FitQuest</h1>
-              <p className="font-body text-gray-600 mb-6">Your fitness journey starts here!</p>
+              <h2 className="font-semibold text-xl text-primary/90 mb-1">
+                {isSignUp ? "Create Your Account" : "Welcome Back!"}
+              </h2>
+              <p className="font-body text-gray-600 mb-6">
+                {isSignUp 
+                  ? "Join the fitness revolution today" 
+                  : "Continue your fitness journey"}
+              </p>
             </motion.div>
             
             <form onSubmit={handleSubmit} className="w-full space-y-4">
@@ -170,6 +198,7 @@ export default function Login({ setIsAuthenticated }: LoginProps) {
                     placeholder="Choose a username"
                     value={formData.username}
                     onChange={handleInputChange}
+                    required
                   />
                 </motion.div>
               )}
@@ -184,6 +213,7 @@ export default function Login({ setIsAuthenticated }: LoginProps) {
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  required
                 />
               </motion.div>
               
@@ -197,8 +227,26 @@ export default function Login({ setIsAuthenticated }: LoginProps) {
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  required
+                  minLength={6}
                 />
               </motion.div>
+              
+              {isSignUp && (
+                <motion.div variants={itemVariants}>
+                  <Label htmlFor="confirmPassword" className="block text-sm font-semibold mb-1">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </motion.div>
+              )}
               
               <motion.div variants={itemVariants}>
                 <Button
@@ -239,16 +287,20 @@ export default function Login({ setIsAuthenticated }: LoginProps) {
               </Button>
             </motion.div>
             
-            <motion.p className="mt-8 text-sm text-gray-600 text-center" variants={itemVariants}>
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+            <motion.div className="mt-8 text-center" variants={itemVariants}>
+              <p className="text-sm text-gray-600 mb-2">
+                {isSignUp ? "Already have an account?" : "Don't have an account?"}
+              </p>
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="text-primary font-semibold"
+                className={`font-semibold text-base ${isSignUp 
+                  ? "text-primary" 
+                  : "bg-primary/10 text-primary px-4 py-2 rounded-lg hover:bg-primary/20 transition-all"}`}
               >
-                {isSignUp ? "Sign In" : "Sign Up"}
+                {isSignUp ? "Sign In Instead" : "Create Account"}
               </button>
-            </motion.p>
+            </motion.div>
           </CardContent>
         </Card>
       </motion.div>
