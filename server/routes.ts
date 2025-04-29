@@ -168,6 +168,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error fetching user" });
     }
   });
+  
+  app.patch("/api/user/profile", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const userData = req.body;
+      
+      const updatedUser = await storage.updateUserProfile(userId, userData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Remove password from the response
+      const { password, ...userResponse } = updatedUser;
+      res.status(200).json(userResponse);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
 
   // Challenge routes
   app.get("/api/challenges", requireAuth, async (req, res) => {

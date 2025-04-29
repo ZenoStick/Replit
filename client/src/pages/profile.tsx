@@ -10,8 +10,13 @@ import { BadgeItem } from "@/components/badge-item";
 import { BMICalculator } from "@/components/bmi-calculator";
 import { User, Achievement } from "@shared/schema";
 import { truncateText } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 
 export default function Profile() {
+  // Get toast
+  const { toast } = useToast();
+  
   // Get user data
   const { data: user, isLoading: isUserLoading } = useQuery<User>({
     queryKey: ['/api/user']
@@ -253,7 +258,15 @@ export default function Profile() {
                       {[1, 2, 3, 4, 5, 6].map((id) => (
                         <button
                           key={id}
-                          className="rounded-full w-14 h-14 overflow-hidden border-2 border-transparent hover:border-primary transition-all"
+                          className={`rounded-full w-14 h-14 overflow-hidden border-2 ${user?.avatarId === id ? 'border-primary' : 'border-transparent'} hover:border-primary transition-all`}
+                          onClick={() => {
+                            // Update avatarId locally
+                            if (user) {
+                              const updatedUser = { ...user, avatarId: id };
+                              // Update query cache with new value
+                              queryClient.setQueryData(['/api/user'], updatedUser);
+                            }
+                          }}
                         >
                           <img 
                             src={`https://images.unsplash.com/photo-1${530000000 + id * 100}?w=56&h=56&fit=crop`}
@@ -272,7 +285,15 @@ export default function Profile() {
                         <Button 
                           key={goal}
                           variant="outline"
-                          className="border-2 border-gray-200 hover:border-primary"
+                          className={`border-2 ${user?.fitnessGoal === goal ? 'border-primary bg-primary bg-opacity-10' : 'border-gray-200'} hover:border-primary`}
+                          onClick={() => {
+                            // Update fitnessGoal locally
+                            if (user) {
+                              const updatedUser = { ...user, fitnessGoal: goal };
+                              // Update query cache with new value
+                              queryClient.setQueryData(['/api/user'], updatedUser);
+                            }
+                          }}
                         >
                           {goal}
                         </Button>
@@ -281,18 +302,92 @@ export default function Profile() {
                   </div>
                   
                   <div>
+                    <h4 className="font-medium mb-2">Workout Days Per Week</h4>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5, 6, 7].map((days) => (
+                        <Button 
+                          key={days}
+                          variant="outline"
+                          className={`rounded-full w-10 h-10 p-0 border-2 ${user?.workoutDaysPerWeek === days ? 'border-primary bg-primary bg-opacity-10' : 'border-gray-200'} hover:border-primary`}
+                          onClick={() => {
+                            // Update workoutDaysPerWeek locally
+                            if (user) {
+                              const updatedUser = { ...user, workoutDaysPerWeek: days };
+                              // Update query cache with new value
+                              queryClient.setQueryData(['/api/user'], updatedUser);
+                            }
+                          }}
+                        >
+                          {days}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
                     <h4 className="font-medium mb-2">Theme Color</h4>
                     <div className="flex gap-2">
-                      {["bg-primary", "bg-accent", "bg-secondary", "bg-nature", "bg-energy"].map((color) => (
+                      {["bg-primary", "bg-accent", "bg-secondary", "bg-nature", "bg-energy"].map((color, index) => (
                         <button
                           key={color}
-                          className={`${color} w-8 h-8 rounded-full border-2 border-gray-200 hover:border-black`}
+                          className={`${color} w-8 h-8 rounded-full border-2 ${user?.themeColor === index ? 'border-black' : 'border-gray-200'} hover:border-black`}
+                          onClick={() => {
+                            // Update themeColor locally
+                            if (user) {
+                              const updatedUser = { ...user, themeColor: index };
+                              // Update query cache with new value
+                              queryClient.setQueryData(['/api/user'], updatedUser);
+                            }
+                          }}
                         />
                       ))}
                     </div>
                   </div>
                   
-                  <Button className="w-full bg-primary text-white border-2 border-violet-700">
+                  <Button 
+                    className="w-full bg-primary text-white border-2 border-violet-700"
+                    onClick={() => {
+                      // Get the latest user data from cache
+                      const userData = queryClient.getQueryData<User>(['/api/user']);
+                      
+                      if (userData) {
+                        // Send update request to server
+                        fetch('/api/user/profile', {
+                          method: 'PATCH',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            avatarId: userData.avatarId,
+                            fitnessGoal: userData.fitnessGoal,
+                            workoutDaysPerWeek: userData.workoutDaysPerWeek,
+                            themeColor: userData.themeColor
+                          }),
+                        })
+                        .then(response => {
+                          if (response.ok) {
+                            toast({
+                              title: "Profile Updated",
+                              description: "Your profile changes have been saved.",
+                              variant: "default",
+                            });
+                            // Refresh user data
+                            queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+                          } else {
+                            throw new Error('Failed to update profile');
+                          }
+                        })
+                        .catch(err => {
+                          console.error('Error updating profile:', err);
+                          toast({
+                            title: "Update Failed",
+                            description: "There was a problem updating your profile.",
+                            variant: "destructive",
+                          });
+                        });
+                      }
+                    }}
+                  >
                     Save Changes
                   </Button>
                 </div>
@@ -304,17 +399,54 @@ export default function Profile() {
       
       {/* Settings Section */}
       <motion.div className="space-y-3 mb-20" variants={itemVariants}>
-        <a href="#" className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm">
+        <Button
+          onClick={() => {
+            const editProfileTab = document.querySelector('[value="customize"]') as HTMLElement;
+            if (editProfileTab) editProfileTab.click();
+          }}
+          className="w-full flex items-center justify-between bg-white p-4 rounded-xl shadow-sm"
+          variant="ghost"
+        >
           <div className="flex items-center">
             <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-              <i className="fas fa-gear text-gray-500"></i>
+              <i className="fas fa-user-edit text-primary"></i>
             </div>
-            <span className="font-medium">Settings</span>
+            <span className="font-medium">Edit Profile</span>
           </div>
           <i className="fas fa-chevron-right text-gray-400"></i>
-        </a>
+        </Button>
         
-        <a href="#" className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm">
+        <Button
+          variant="ghost"
+          className="w-full flex items-center justify-between bg-white p-4 rounded-xl shadow-sm"
+          onClick={() => {
+            fetch('/api/auth/logout', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+            .then(response => {
+              if (response.ok) {
+                window.location.href = '/login';
+              }
+            })
+            .catch(err => console.error('Logout failed:', err));
+          }}
+        >
+          <div className="flex items-center">
+            <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+              <i className="fas fa-sign-out-alt text-red-500"></i>
+            </div>
+            <span className="font-medium">Logout</span>
+          </div>
+          <i className="fas fa-chevron-right text-gray-400"></i>
+        </Button>
+        
+        <Button
+          variant="ghost"
+          className="w-full flex items-center justify-between bg-white p-4 rounded-xl shadow-sm"
+        >
           <div className="flex items-center">
             <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
               <i className="fas fa-bell text-gray-500"></i>
@@ -322,19 +454,25 @@ export default function Profile() {
             <span className="font-medium">Notifications</span>
           </div>
           <i className="fas fa-chevron-right text-gray-400"></i>
-        </a>
+        </Button>
         
-        <a href="#" className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm">
+        <Button
+          variant="ghost"
+          className="w-full flex items-center justify-between bg-white p-4 rounded-xl shadow-sm"
+        >
           <div className="flex items-center">
             <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-              <i className="fas fa-user-group text-gray-500"></i>
+              <i className="fas fa-gear text-gray-500"></i>
             </div>
-            <span className="font-medium">Friends</span>
+            <span className="font-medium">Settings</span>
           </div>
           <i className="fas fa-chevron-right text-gray-400"></i>
-        </a>
+        </Button>
         
-        <a href="#" className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm">
+        <Button
+          variant="ghost"
+          className="w-full flex items-center justify-between bg-white p-4 rounded-xl shadow-sm"
+        >
           <div className="flex items-center">
             <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
               <i className="fas fa-circle-question text-gray-500"></i>
@@ -342,7 +480,7 @@ export default function Profile() {
             <span className="font-medium">Help & Support</span>
           </div>
           <i className="fas fa-chevron-right text-gray-400"></i>
-        </a>
+        </Button>
       </motion.div>
     </motion.div>
   );
