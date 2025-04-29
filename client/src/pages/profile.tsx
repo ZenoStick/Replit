@@ -428,10 +428,21 @@ export default function Profile() {
             })
             .then(response => {
               if (response.ok) {
-                window.location.href = '/login';
+                // Clear any cached query data
+                queryClient.clear();
+                setTimeout(() => {
+                  window.location.href = "/";
+                }, 100);
               }
             })
-            .catch(err => console.error('Logout failed:', err));
+            .catch(err => {
+              console.error('Logout failed:', err);
+              toast({
+                title: "Logout Failed",
+                description: "Unable to log out. Please try again.",
+                variant: "destructive"
+              });
+            });
           }}
         >
           <div className="flex items-center">

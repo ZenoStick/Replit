@@ -28,7 +28,7 @@ function Router() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // First, try to get the current user
+        // Try to get the current user
         const res = await fetch("/api/user", {
           credentials: "include"
         });
@@ -36,25 +36,7 @@ function Router() {
         if (res.ok) {
           setIsAuthenticated(true);
         } else {
-          // If user is not authenticated, try the test user endpoint
-          // NOTE: This is only for development and should be removed in production
-          try {
-            const testUserRes = await fetch("/api/test/create-user", {
-              credentials: "include"
-            });
-            
-            if (testUserRes.ok) {
-              setIsAuthenticated(true);
-              toast({
-                title: "Development Mode",
-                description: "Using test user account for development",
-              });
-            } else {
-              setIsAuthenticated(false);
-            }
-          } catch (testError) {
-            setIsAuthenticated(false);
-          }
+          setIsAuthenticated(false);
         }
       } catch (error) {
         setIsAuthenticated(false);
@@ -105,6 +87,9 @@ function Router() {
         <Switch>
           <Route path="/">
             {isAuthenticated ? <Home /> : <Login setIsAuthenticated={setIsAuthenticated} />}
+          </Route>
+          <Route path="/login">
+            {isAuthenticated ? window.location.href = "/home" : <Login setIsAuthenticated={setIsAuthenticated} />}
           </Route>
           <Route path="/onboarding">
             <ProtectedRoute>
