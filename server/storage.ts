@@ -17,6 +17,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserPoints(userId: number, points: number): Promise<User | undefined>;
   updateUserStreak(userId: number, streak: number): Promise<User | undefined>;
+  updateUserProfile(userId: number, userData: Partial<User>): Promise<User | undefined>;
   
   // Challenges
   getChallenges(userId: number): Promise<Challenge[]>;
@@ -142,6 +143,22 @@ export class MemStorage implements IStorage {
     const updatedUser = { 
       ...user, 
       streakDays: streak
+    };
+    
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+  
+  async updateUserProfile(userId: number, userData: Partial<User>): Promise<User | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) return undefined;
+    
+    // Do not allow updating certain fields like id, points, level, etc.
+    const { id, points, level, createdAt, ...allowedUpdates } = userData as any;
+    
+    const updatedUser = { 
+      ...user,
+      ...allowedUpdates,
     };
     
     this.users.set(userId, updatedUser);
@@ -489,6 +506,22 @@ export class DatabaseStorage implements IStorage {
     const [updatedUser] = await db
       .update(users)
       .set({ streakDays: streak })
+      .where(eq(users.id, userId))
+      .returning();
+      
+    return updatedUser;
+  }
+  
+  async updateUserProfile(userId: number, userData: Partial<User>): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user) return undefined;
+    
+    // Do not allow updating certain fields like id, points, level, etc.
+    const { id, points, level, createdAt, ...allowedUpdates } = userData as any;
+    
+    const [updatedUser] = await db
+      .update(users)
+      .set(allowedUpdates)
       .where(eq(users.id, userId))
       .returning();
       
