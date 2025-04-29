@@ -76,6 +76,19 @@ export const spinResults = pgTable("spin_results", {
   spinDate: timestamp("spin_date").notNull().defaultNow()
 });
 
+export const workoutHistory = pgTable("workout_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  workoutId: integer("workout_id").references(() => workouts.id, { onDelete: "set null" }),
+  challengeId: integer("challenge_id").references(() => challenges.id, { onDelete: "set null" }),
+  caloriesBurned: integer("calories_burned").notNull().default(0),
+  duration: integer("duration").notNull().default(0), // in seconds
+  exerciseCount: integer("exercise_count").notNull().default(0),
+  completedExercises: text("completed_exercises").notNull().default("[]"), // JSON stringified array
+  notes: text("notes"),
+  dateCompleted: timestamp("date_completed").notNull().defaultNow()
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -131,6 +144,17 @@ export const insertSpinResultSchema = createInsertSchema(spinResults).pick({
   userId: true,
   reward: true,
   points: true
+});
+
+export const insertWorkoutHistorySchema = createInsertSchema(workoutHistory).pick({
+  userId: true,
+  workoutId: true,
+  challengeId: true,
+  caloriesBurned: true,
+  duration: true,
+  exerciseCount: true,
+  completedExercises: true,
+  notes: true
 });
 
 export const loginSchema = z.object({

@@ -89,7 +89,7 @@ function Router() {
             {isAuthenticated ? <Home /> : <Login setIsAuthenticated={setIsAuthenticated} />}
           </Route>
           <Route path="/login">
-            {isAuthenticated ? window.location.href = "/home" : <Login setIsAuthenticated={setIsAuthenticated} />}
+            {isAuthenticated ? <Home /> : <Login setIsAuthenticated={setIsAuthenticated} />}
           </Route>
           <Route path="/onboarding">
             <ProtectedRoute>
