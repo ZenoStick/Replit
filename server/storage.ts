@@ -111,7 +111,8 @@ export class MemStorage implements IStorage {
       createdAt: now,
       avatarId: insertUser.avatarId || 1,
       fitnessGoal: insertUser.fitnessGoal || null,
-      workoutDaysPerWeek: insertUser.workoutDaysPerWeek || 3
+      workoutDaysPerWeek: insertUser.workoutDaysPerWeek || 3,
+      themeColor: insertUser.themeColor || 0
     };
     this.users.set(id, user);
     

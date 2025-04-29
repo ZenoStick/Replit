@@ -14,6 +14,7 @@ export const users = pgTable("users", {
   streakDays: integer("streak_days").notNull().default(0),
   fitnessGoal: text("fitness_goal"),
   workoutDaysPerWeek: integer("workout_days_per_week").notNull().default(3),
+  themeColor: integer("theme_color").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow()
 });
 
@@ -82,7 +83,8 @@ export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   avatarId: true,
   fitnessGoal: true,
-  workoutDaysPerWeek: true
+  workoutDaysPerWeek: true,
+  themeColor: true
 });
 
 export const insertChallengeSchema = createInsertSchema(challenges).pick({
